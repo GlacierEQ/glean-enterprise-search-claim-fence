@@ -1,0 +1,10 @@
+[project]
+name = "glean-enterprise-search-claim-fence"
+version = "0.0.1"
+description = "Scaffold: Enterprise Search Claim Fence (independent Glean lens)"
+requires-python = ">=3.11"
+dependencies = []
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]

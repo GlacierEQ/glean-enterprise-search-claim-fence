@@ -1,0 +1,31 @@
+{
+  "schema": "glaciereq.proof-receipt.v1",
+  "repository": "GlacierEQ/glean-enterprise-search-claim-fence",
+  "source_sha": "31e2071dee013aef436440681d20e32445b1b9b1f1cdc7ea334fdad0acbba2ff",
+  "proof_id": "elite-glean-enterprise-search-claim-fence-1786356663",
+  "environment": {
+    "python": "/Users/kcbflux/.local/bin/python3.11",
+    "PYTHONPATH": "/Users/kcbflux/GlacierEQ_Swarm/job-app/repos/glean-enterprise-search-claim-fence:/Users/kcbflux/GlacierEQ_Swarm/job-app/repos/glean-enterprise-search-claim-fence/src",
+    "entry": "unittest"
+  },
+  "tests": [
+    "/Users/kcbflux/.local/bin/python3.11 -m unittest discover -s tests -v (x2)"
+  ],
+  "adversarial_tests": [
+    "tests/test_adversarial.py"
+  ],
+  "runtime": {
+    "operate": "scripts/operate.py (x2)",
+    "dual_run_ok": true,
+    "proof_dual_run_ok": true
+  },
+  "result": "PASS",
+  "limitations": [
+    "not production deployed",
+    "reference implementation only"
+  ],
+  "timestamp": "2026-08-10T10:11Z",
+  "artifact_hashes": {
+    "operability_receipt": "9d6c8c161489f385e21654d5cd6b0160c50b80a624ae293d18f3b3c4539bfaff"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "schema": "glaciereq.repo-capabilities.v1",
+  "repository": "GlacierEQ/glean-enterprise-search-claim-fence",
+  "capabilities": [
+    {
+      "id": "enterprise-search-claim-fence",
+      "name": "Enterprise Search Claim Fence",
+      "status": "SCAFFOLD",
+      "module": "src/enterprise_search_claim_fence.py"
+    }
+  ]
+}

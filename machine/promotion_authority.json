@@ -1,0 +1,11 @@
+{
+  "schema": "glaciereq.promotion-authority-grant.v1",
+  "repository": "GlacierEQ/glean-enterprise-search-claim-fence",
+  "source_sha": "31e2071dee013aef436440681d20e32445b1b9b1f1cdc7ea334fdad0acbba2ff",
+  "proof_receipt_digest": "068ee68728dd83d78764f72a1521448c95a6bc5a1ded36dc5795695ea82aae77",
+  "not_after": 1788948663.4836009,
+  "mac": "9ddf59951e6a40fd3537507acea5558598dc86d233d30c3dbb2759378ba285b6",
+  "issuer": "local_operator_promotion_authority",
+  "verified": true,
+  "secret_ref": "src/promotion_authority.py::LOCAL_OPERATOR_SECRET"
+}
