@@ -2,21 +2,45 @@
   "schema": "glaciereq.repo-target-contract.v1",
   "identity": {
     "repository_id": "GlacierEQ/glean-enterprise-search-claim-fence",
-    "family": "elite-estate"
+    "family": "elite-estate",
+    "role": "specialist_component"
   },
   "current": {
-    "state": "PROMOTED",
+    "state": "FUNCTIONAL_CANDIDATE",
     "implemented": true,
     "tested": true,
-    "deployed": false
+    "deployed": false,
+    "runtime_provider_verified": false
   },
+  "unique_value": "ACL-aware enterprise-search evidence eligibility, claim-unit coverage, and content-addressed evidence rebinding",
   "nonclaims": [
-    "no employer affiliation",
-    "no production deployment without receipt"
+    "no employer or provider affiliation",
+    "no live Glean retrieval or authentication",
+    "no production deployment without receipt",
+    "no provider attestation",
+    "no customer impact, latency, scale, or revenue claim"
   ],
+  "proof": {
+    "source_sha_before_shell_convergence": "b90793d2891d23540e9b1d8ae6e1064599a0436b",
+    "workflow_run": 31646313718,
+    "workflow_job": 94280594219,
+    "result": "PASS",
+    "scope": [
+      "python setup and dependency install",
+      "focused deterministic/adversarial enterprise-search evidence tests",
+      "direct verify_claim runtime scenario"
+    ],
+    "historical_after_source_change": true
+  },
+  "reusable_capabilities": [
+    "acl_aware_evidence_eligibility",
+    "claim_unit_coverage",
+    "evidence_digest_rebinding"
+  ],
+  "evolution_cursor": "Run full repository-native pytest plus scripts/verify_claim.py on the converged exact head; bind the passing receipt to that SHA before promotion.",
   "donor_plan": {
     "mode": "none",
     "donors": []
   },
-  "frozen_at": "2026-08-10T10:11Z"
+  "updated_at": "2026-08-14T05:05:57-10:00"
 }
