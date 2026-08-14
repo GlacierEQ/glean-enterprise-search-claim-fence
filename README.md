@@ -14,11 +14,13 @@ Enterprise answers can appear supported while depending on documents the request
 - excludes ACL-inaccessible, stale, or below-threshold documents;
 - owns freshness time at the evaluator boundary; callers cannot override evaluation time in the payload, while tests may inject a deterministic clock;
 - maps supporting and contradicting metadata to explicit claim units and refuses contradiction even when a hit's coarse stance label says `support`;
-- enforces minimum supporting-hit, source-diversity, and claim-coverage policy;
+- enforces minimum supporting-hit, source-diversity, and full claim-coverage policy;
+- permits caller policy to tighten security thresholds, never weaken the verifier's minimum score, evidence-strength, or claim-coverage floors;
 - rejects excessive contradiction;
-- binds decisions to immutable document and index-snapshot digests;
-- supports expected-evidence rebinding to detect result or entitlement mutation;
+- binds decisions to immutable document and index-snapshot digests, including actor-entitlement identity;
+- supports expected-evidence rebinding to detect result, entitlement, or snapshot mutation;
 - enforces the aggregate input-size ceiling at the library boundary as well as the CLI boundary;
+- normalizes unreadable input failures without echoing local filesystem paths;
 - rejects malformed, over-budget, expired, duplicate, or out-of-range inputs fail-closed;
 - emits deterministic ALLOW/REFUSE receipts with bounded metrics and evidence identity.
 
@@ -39,7 +41,7 @@ Role: **specialist component / entitlement-aware enterprise-search evidence veri
 
 Its distinct value versus generic or hybrid-search claim fences is actor-specific authorization and claim-unit coverage. Search ranking is input evidence, not the mechanism owned here.
 
-Reusable capability: ACL-aware evidence eligibility + claim-unit coverage + content-addressed evidence rebinding.
+Reusable capability: ACL-aware evidence eligibility + claim-unit coverage + trusted freshness evaluation + bounded library evaluation + content-addressed evidence rebinding.
 
 ## Truth boundary
 
@@ -50,4 +52,4 @@ Reusable capability: ACL-aware evidence eligibility + claim-unit coverage + cont
 
 ## Excellence cursor
 
-Keep the full deterministic/adversarial suite passing on each source revision, preserve ACL, evaluator-time, aggregate-size, contradiction-accounting, and evidence-rebinding boundaries, and only add provider integration when it can be authenticated and proven separately.
+Keep the full deterministic/adversarial suite passing on each source revision, preserve ACL, policy-floor, evaluator-time, aggregate-size, contradiction-accounting, safe-error, entitlement-rebinding, and evidence-rebinding boundaries, and only add provider integration when it can be authenticated and proven separately.
