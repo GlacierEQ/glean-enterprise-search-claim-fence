@@ -6,13 +6,13 @@
     "role": "specialist_component"
   },
   "current": {
-    "state": "FUNCTIONAL_CANDIDATE",
+    "state": "REPAIRED_PENDING_EXACT_HEAD_PROOF",
     "implemented": true,
-    "tested": true,
+    "tested": false,
     "deployed": false,
     "runtime_provider_verified": false
   },
-  "unique_value": "ACL-aware enterprise-search evidence eligibility, claim-unit coverage, and content-addressed evidence rebinding",
+  "unique_value": "ACL-aware enterprise-search evidence eligibility, claim-unit coverage, evaluator-owned freshness time, bounded request evaluation, and content-addressed evidence rebinding",
   "nonclaims": [
     "no employer or provider affiliation",
     "no live Glean retrieval or authentication",
@@ -20,41 +20,47 @@
     "no provider attestation",
     "no customer impact, latency, scale, or revenue claim"
   ],
-  "proof": {
+  "historical_proof": {
     "source_sha": "20ab9256512e2677353619edf9c4d0d3bfdc7bc9",
     "workflow_run": 31822438435,
     "workflow_job": 94838637309,
     "result": "PASS",
-    "scope": [
-      "exact-SHA repository checkout",
-      "python setup and dependency install",
-      "full python -m pytest -q repository test surface",
-      "direct python scripts/verify_claim.py runtime scenario"
+    "historical_after_source_change": true
+  },
+  "repair": {
+    "status": "IMPLEMENTED_PENDING_EXACT_HEAD_EXECUTION",
+    "closed_findings": [
+      "aggregate input-size bound enforced inside evaluate for direct library callers",
+      "freshness evaluation uses evaluator-owned time with deterministic clock injection for tests",
+      "contradicts_units is accounted independently of coarse stance labels"
     ],
-    "historical_after_source_change": true,
-    "superseded_by_source_change": "receipt-only contract update plus pending review-driven source repair"
+    "regressions_added": [
+      "direct library aggregate-size refusal",
+      "caller payload cannot override evaluator time",
+      "contradiction metadata cannot hide behind support stance"
+    ]
   },
   "excellence": {
-    "deterministic_tests_pass": "HISTORICAL_PASS_AT_20ab9256512e2677353619edf9c4d0d3bfdc7bc9",
-    "adversarial_tests_pass": "REOPENED_BY_VERIFIED_REVIEW_FINDINGS",
-    "runtime_behavior_observed": "LOCAL_VERIFIER_ONLY_AT_20ab9256512e2677353619edf9c4d0d3bfdc7bc9",
+    "deterministic_tests_pass": "PENDING_CURRENT_HEAD",
+    "adversarial_tests_pass": "PENDING_CURRENT_HEAD",
+    "runtime_behavior_observed": "PENDING_CURRENT_HEAD_LOCAL_VERIFIER",
     "security_authority_bounded": true,
-    "proof_receipt_bound_to_sha": true
+    "proof_receipt_bound_to_sha": true,
+    "projections_truth_consistent": true,
+    "evolution_cursor_defined": true
   },
-  "open_findings": [
-    "enforce aggregate input-size bound inside evaluate for direct library callers",
-    "remove caller authority over freshness evaluation time and inject evaluator-owned time",
-    "reject inconsistent stance/claim-unit contradiction metadata or account contradictions independently"
-  ],
+  "open_findings": [],
   "reusable_capabilities": [
     "acl_aware_evidence_eligibility",
     "claim_unit_coverage",
+    "evaluator_owned_freshness_time",
+    "bounded_library_evaluation",
     "evidence_digest_rebinding"
   ],
-  "evolution_cursor": "Repair the three verified review findings, add regressions, then require a new exact-head full pytest plus verify_claim PASS before merge.",
+  "evolution_cursor": "Execute repository-native full pytest plus verify_claim on this repaired exact head; resolve addressed review threads; merge with expected-head guard when green; read back canonical main and bind the final receipt without moving source.",
   "donor_plan": {
     "mode": "none",
     "donors": []
   },
-  "updated_at": "2026-08-14T09:04:23-10:00"
+  "updated_at": "2026-08-14T09:22:00-10:00"
 }
