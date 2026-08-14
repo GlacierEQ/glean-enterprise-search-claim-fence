@@ -21,26 +21,40 @@
     "no customer impact, latency, scale, or revenue claim"
   ],
   "proof": {
-    "source_sha_before_shell_convergence": "b90793d2891d23540e9b1d8ae6e1064599a0436b",
-    "workflow_run": 31646313718,
-    "workflow_job": 94280594219,
+    "source_sha": "20ab9256512e2677353619edf9c4d0d3bfdc7bc9",
+    "workflow_run": 31822438435,
+    "workflow_job": 94838637309,
     "result": "PASS",
     "scope": [
+      "exact-SHA repository checkout",
       "python setup and dependency install",
-      "focused deterministic/adversarial enterprise-search evidence tests",
-      "direct verify_claim runtime scenario"
+      "full python -m pytest -q repository test surface",
+      "direct python scripts/verify_claim.py runtime scenario"
     ],
-    "historical_after_source_change": true
+    "historical_after_source_change": true,
+    "superseded_by_source_change": "receipt-only contract update plus pending review-driven source repair"
   },
+  "excellence": {
+    "deterministic_tests_pass": "HISTORICAL_PASS_AT_20ab9256512e2677353619edf9c4d0d3bfdc7bc9",
+    "adversarial_tests_pass": "REOPENED_BY_VERIFIED_REVIEW_FINDINGS",
+    "runtime_behavior_observed": "LOCAL_VERIFIER_ONLY_AT_20ab9256512e2677353619edf9c4d0d3bfdc7bc9",
+    "security_authority_bounded": true,
+    "proof_receipt_bound_to_sha": true
+  },
+  "open_findings": [
+    "enforce aggregate input-size bound inside evaluate for direct library callers",
+    "remove caller authority over freshness evaluation time and inject evaluator-owned time",
+    "reject inconsistent stance/claim-unit contradiction metadata or account contradictions independently"
+  ],
   "reusable_capabilities": [
     "acl_aware_evidence_eligibility",
     "claim_unit_coverage",
     "evidence_digest_rebinding"
   ],
-  "evolution_cursor": "Run full repository-native pytest plus scripts/verify_claim.py on the converged exact head; bind the passing receipt to that SHA before promotion.",
+  "evolution_cursor": "Repair the three verified review findings, add regressions, then require a new exact-head full pytest plus verify_claim PASS before merge.",
   "donor_plan": {
     "mode": "none",
     "donors": []
   },
-  "updated_at": "2026-08-14T05:05:57-10:00"
+  "updated_at": "2026-08-14T09:04:23-10:00"
 }
