@@ -13,10 +13,11 @@ import json
 import math
 import re
 import sys
+import time
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
-from typing import Any, Mapping, Sequence
+from typing import Any, Callable, Mapping, Sequence
 
 _SHA256 = re.compile(r"^[0-9a-fA-F]{64}$")
 
@@ -58,10 +59,13 @@ class EnterpriseSearchEvidence:
     MAX_INPUT_CHARS = 2_000_000
     BASE_WORK = 0.5
     HIT_WORK = 0.01
-    VALID_PAYLOAD_KEYS = frozenset({"now", "actor_id", "actor_entitlements", "query", "claim", "claim_units", "index_snapshot_digest", "hits", "policy", "expected_evidence_digest"})
+    VALID_PAYLOAD_KEYS = frozenset({"actor_id", "actor_entitlements", "query", "claim", "claim_units", "index_snapshot_digest", "hits", "policy", "expected_evidence_digest"})
     HIT_KEYS = frozenset({"document_id", "source_uri", "document_digest", "score", "indexed_at", "acl_any", "stance", "evidence_strength", "supports_units", "contradicts_units"})
     POLICY_KEYS = frozenset({"min_score", "min_evidence_strength", "max_age_seconds", "min_supporting_hits", "min_supporting_sources", "min_claim_coverage", "max_contradicted_units"})
     STANCES = frozenset({"support", "contradict", "neutral"})
+
+    def __init__(self, *, now_fn: Callable[[], float] | None = None) -> None:
+        self._now_fn = now_fn or time.time
 
     @classmethod
     def _text(cls, value: Any, label: str) -> str:
@@ -145,49 +149,71 @@ class EnterpriseSearchEvidence:
         eligible = entitled and fresh and score_ok and strength_ok
         return {"document_id": cls._text(raw.get("document_id"), f"hit_{index}_document_id"), "source_uri": cls._text(raw.get("source_uri"), f"hit_{index}_source_uri"), "document_digest": cls._sha(raw.get("document_digest"), f"hit_{index}_document_digest"), "score": score, "indexed_at": indexed_at, "age_seconds": age_seconds, "acl_any": acl_any, "entitled": entitled, "fresh": fresh, "score_ok": score_ok, "strength_ok": strength_ok, "eligible": eligible, "stance": stance, "evidence_strength": strength, "weighted_evidence": score * strength, "supports_units": supports, "contradicts_units": contradicts}
 
+    @classmethod
+    def _request_size(cls, req: EnterpriseSearchEvidenceRequest) -> int:
+        try:
+            raw = json.dumps(
+                {"subject_id": req.subject_id, "payload": req.payload, "budget": req.budget, "not_after": req.not_after},
+                sort_keys=True,
+                separators=(",", ":"),
+                ensure_ascii=False,
+                allow_nan=False,
+            )
+        except (TypeError, ValueError) as exc:
+            raise ValueError("request_not_json_serializable") from exc
+        if len(raw) > cls.MAX_INPUT_CHARS:
+            raise ValueError("input_too_large")
+        return len(raw)
+
     def evaluate(self, req: EnterpriseSearchEvidenceRequest) -> EnterpriseSearchEvidenceReceipt:
         reasons: list[str] = []
+        request_shape_blocked = False
+        try:
+            self._request_size(req)
+        except ValueError as exc:
+            reasons.append(str(exc)); request_shape_blocked = True
         try: subject_id = self._text(req.subject_id, "subject_id")
         except ValueError as exc: subject_id = ""; reasons.append(str(exc))
         try: budget = self._number(req.budget, "budget", minimum=0.001)
         except ValueError as exc: budget = 0.0; reasons.append(str(exc))
-        if not isinstance(req.payload, Mapping): payload: Mapping[str, Any] = {}; reasons.append("payload_not_object")
+        if not isinstance(req.payload, Mapping): payload: Mapping[str, Any] = {}; reasons.append("payload_not_object"); request_shape_blocked = True
         else:
             payload = req.payload
             unknown = set(payload) - self.VALID_PAYLOAD_KEYS
             if unknown: reasons.append("payload_keys_unknown:" + ",".join(sorted(unknown)))
         result: dict[str, Any] = {}; work_units = self.BASE_WORK
-        try:
-            now = self._number(payload.get("now"), "now")
-            if req.not_after is not None and now > self._number(req.not_after, "not_after"): reasons.append("request_expired")
-            actor_id = self._text(payload.get("actor_id"), "actor_id")
-            actor_entitlements_list = self._text_list(payload.get("actor_entitlements", []), "actor_entitlements", limit=self.MAX_ENTITLEMENTS)
-            actor_entitlements = set(actor_entitlements_list)
-            query = self._text(payload.get("query"), "query"); claim = self._text(payload.get("claim"), "claim")
-            claim_units_list = self._text_list(payload.get("claim_units"), "claim_units", limit=self.MAX_UNITS, allow_empty=False); claim_units = set(claim_units_list)
-            snapshot = self._sha(payload.get("index_snapshot_digest"), "index_snapshot_digest"); policy = self._policy(payload.get("policy"))
-            hits_raw = payload.get("hits")
-            if not isinstance(hits_raw, list): raise ValueError("hits_missing")
-            if len(hits_raw) > self.MAX_HITS: raise ValueError("hits_over_limit")
-            work_units += len(hits_raw) * self.HIT_WORK
-            if work_units > budget: reasons.append("work_budget_exceeded")
-            else:
-                hits = [self._hit(raw, index, now=now, actor_entitlements=actor_entitlements, claim_units=claim_units, policy=policy) for index, raw in enumerate(hits_raw)]
-                if len({hit["document_id"] for hit in hits}) != len(hits): raise ValueError("duplicate_document_id")
-                hits.sort(key=lambda hit: (-hit["score"], hit["document_id"]))
-                eligible = [hit for hit in hits if hit["eligible"]]; supports = [hit for hit in eligible if hit["stance"] == "support"]; contradictions = [hit for hit in eligible if hit["stance"] == "contradict"]
-                supported_units = {unit for hit in supports for unit in hit["supports_units"] if hit["weighted_evidence"] > 0.0}
-                contradicted_units = {unit for hit in contradictions for unit in hit["contradicts_units"] if hit["weighted_evidence"] > 0.0}
-                support_sources = {hit["source_uri"] for hit in supports}; coverage = len(supported_units) / len(claim_units)
-                if len(supports) < policy["min_supporting_hits"]: reasons.append("insufficient_supporting_hits")
-                if len(support_sources) < policy["min_supporting_sources"]: reasons.append("insufficient_supporting_sources")
-                if coverage < policy["min_claim_coverage"]: reasons.append("insufficient_claim_coverage")
-                if len(contradicted_units) > policy["max_contradicted_units"]: reasons.append("contradicted_claim_units_exceeded")
-                manifest = {"schema": "glaciereq.enterprise-search-evidence.v1", "actor_id": actor_id, "actor_entitlements_digest": _digest(actor_entitlements_list), "query": query, "claim": claim, "claim_units": claim_units_list, "index_snapshot_digest": snapshot, "policy": policy, "ranked_hits": hits}
-                evidence_digest = _digest(manifest); expected = payload.get("expected_evidence_digest")
-                if expected is not None and self._sha(expected, "expected_evidence_digest") != evidence_digest: reasons.append("expected_evidence_digest_mismatch")
-                result = {"evidence_digest": evidence_digest, "eligible_hit_count": len(eligible), "supporting_hit_count": len(supports), "supporting_source_count": len(support_sources), "supported_units": sorted(supported_units), "contradicted_units": sorted(contradicted_units), "claim_coverage": coverage, "inaccessible_hit_count": sum(not hit["entitled"] for hit in hits), "stale_hit_count": sum(not hit["fresh"] for hit in hits), "weak_evidence_hit_count": sum(not hit["strength_ok"] for hit in hits)}
-        except ValueError as exc: reasons.append(str(exc))
+        if not request_shape_blocked:
+            try:
+                now = self._number(self._now_fn(), "evaluator_now")
+                if req.not_after is not None and now > self._number(req.not_after, "not_after"): reasons.append("request_expired")
+                actor_id = self._text(payload.get("actor_id"), "actor_id")
+                actor_entitlements_list = self._text_list(payload.get("actor_entitlements", []), "actor_entitlements", limit=self.MAX_ENTITLEMENTS)
+                actor_entitlements = set(actor_entitlements_list)
+                query = self._text(payload.get("query"), "query"); claim = self._text(payload.get("claim"), "claim")
+                claim_units_list = self._text_list(payload.get("claim_units"), "claim_units", limit=self.MAX_UNITS, allow_empty=False); claim_units = set(claim_units_list)
+                snapshot = self._sha(payload.get("index_snapshot_digest"), "index_snapshot_digest"); policy = self._policy(payload.get("policy"))
+                hits_raw = payload.get("hits")
+                if not isinstance(hits_raw, list): raise ValueError("hits_missing")
+                if len(hits_raw) > self.MAX_HITS: raise ValueError("hits_over_limit")
+                work_units += len(hits_raw) * self.HIT_WORK
+                if work_units > budget: reasons.append("work_budget_exceeded")
+                else:
+                    hits = [self._hit(raw, index, now=now, actor_entitlements=actor_entitlements, claim_units=claim_units, policy=policy) for index, raw in enumerate(hits_raw)]
+                    if len({hit["document_id"] for hit in hits}) != len(hits): raise ValueError("duplicate_document_id")
+                    hits.sort(key=lambda hit: (-hit["score"], hit["document_id"]))
+                    eligible = [hit for hit in hits if hit["eligible"]]; supports = [hit for hit in eligible if hit["stance"] == "support"]
+                    supported_units = {unit for hit in supports for unit in hit["supports_units"] if hit["weighted_evidence"] > 0.0}
+                    contradicted_units = {unit for hit in eligible for unit in hit["contradicts_units"] if hit["weighted_evidence"] > 0.0}
+                    support_sources = {hit["source_uri"] for hit in supports}; coverage = len(supported_units) / len(claim_units)
+                    if len(supports) < policy["min_supporting_hits"]: reasons.append("insufficient_supporting_hits")
+                    if len(support_sources) < policy["min_supporting_sources"]: reasons.append("insufficient_supporting_sources")
+                    if coverage < policy["min_claim_coverage"]: reasons.append("insufficient_claim_coverage")
+                    if len(contradicted_units) > policy["max_contradicted_units"]: reasons.append("contradicted_claim_units_exceeded")
+                    manifest = {"schema": "glaciereq.enterprise-search-evidence.v1", "actor_id": actor_id, "actor_entitlements_digest": _digest(actor_entitlements_list), "query": query, "claim": claim, "claim_units": claim_units_list, "index_snapshot_digest": snapshot, "policy": policy, "ranked_hits": hits}
+                    evidence_digest = _digest(manifest); expected = payload.get("expected_evidence_digest")
+                    if expected is not None and self._sha(expected, "expected_evidence_digest") != evidence_digest: reasons.append("expected_evidence_digest_mismatch")
+                    result = {"evidence_digest": evidence_digest, "eligible_hit_count": len(eligible), "supporting_hit_count": len(supports), "supporting_source_count": len(support_sources), "supported_units": sorted(supported_units), "contradicted_units": sorted(contradicted_units), "claim_coverage": coverage, "inaccessible_hit_count": sum(not hit["entitled"] for hit in hits), "stale_hit_count": sum(not hit["fresh"] for hit in hits), "weak_evidence_hit_count": sum(not hit["strength_ok"] for hit in hits)}
+            except ValueError as exc: reasons.append(str(exc))
         decision = Decision.REFUSE if reasons else Decision.ALLOW
         if not reasons: reasons = ["claim_supported_by_entitled_fresh_enterprise_evidence"]
         metrics = {"work_units": work_units, "budget_units": budget, "eligible_hit_count": result.get("eligible_hit_count", 0), "supporting_hit_count": result.get("supporting_hit_count", 0), "supporting_source_count": result.get("supporting_source_count", 0), "claim_coverage": result.get("claim_coverage", 0.0), "inaccessible_hit_count": result.get("inaccessible_hit_count", 0), "stale_hit_count": result.get("stale_hit_count", 0), "weak_evidence_hit_count": result.get("weak_evidence_hit_count", 0)}
