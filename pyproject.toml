@@ -1,7 +1,7 @@
 [project]
 name = "glean-enterprise-search-claim-fence"
-version = "0.0.1"
-description = "Scaffold: Enterprise Search Claim Fence (independent Glean lens)"
+version = "0.1.0"
+description = "Deterministic entitlement-aware enterprise-search evidence verifier"
 requires-python = ">=3.11"
 dependencies = []
 
