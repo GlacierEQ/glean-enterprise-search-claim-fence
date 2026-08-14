@@ -2,21 +2,80 @@
   "schema": "glaciereq.repo-target-contract.v1",
   "identity": {
     "repository_id": "GlacierEQ/glean-enterprise-search-claim-fence",
-    "family": "elite-estate"
+    "family": "elite-estate",
+    "role": "specialist_component"
   },
   "current": {
-    "state": "PROMOTED",
+    "state": "REPAIRED_PENDING_EXACT_HEAD_PROOF",
     "implemented": true,
-    "tested": true,
-    "deployed": false
+    "tested": false,
+    "deployed": false,
+    "runtime_provider_verified": false
   },
+  "unique_value": "ACL-aware enterprise-search evidence eligibility, claim-unit coverage, evaluator-owned freshness time, bounded request evaluation, caller-policy floors, and content-addressed evidence rebinding",
   "nonclaims": [
-    "no employer affiliation",
-    "no production deployment without receipt"
+    "no employer or provider affiliation",
+    "no live Glean retrieval or authentication",
+    "no production deployment without receipt",
+    "no provider attestation",
+    "no customer impact, latency, scale, or revenue claim"
   ],
+  "historical_proof": {
+    "source_sha": "20ab9256512e2677353619edf9c4d0d3bfdc7bc9",
+    "workflow_run": 31822438435,
+    "workflow_job": 94838637309,
+    "result": "PASS",
+    "historical_after_source_change": true
+  },
+  "repair": {
+    "status": "IMPLEMENTED_PENDING_EXACT_HEAD_EXECUTION",
+    "closed_findings": [
+      "aggregate input-size bound enforced inside evaluate for direct library callers",
+      "freshness evaluation uses evaluator-owned time with deterministic clock injection for tests",
+      "contradicts_units is accounted independently of coarse stance labels",
+      "caller-supplied policy cannot weaken minimum score, evidence-strength, or full-coverage floors",
+      "unreadable CLI inputs normalize to a stable path-safe error",
+      "entitlement changes are explicitly regression-tested against evidence rebinding",
+      "work-budget refusal is explicitly proven to short-circuit hit normalization"
+    ],
+    "regressions_added": [
+      "direct library aggregate-size refusal",
+      "caller payload cannot override evaluator time",
+      "contradiction metadata cannot hide behind support stance",
+      "caller cannot weaken policy floors",
+      "unreadable CLI path is not leaked",
+      "entitlement mutation breaks expected evidence digest",
+      "over-budget request does not reach duplicate-document normalization"
+    ]
+  },
+  "excellence": {
+    "problem_verified": true,
+    "unique_value_known": true,
+    "canonical_identity_known": true,
+    "central_mechanism_implemented": true,
+    "deterministic_tests_pass": "PENDING_CURRENT_HEAD",
+    "adversarial_tests_pass": "PENDING_CURRENT_HEAD",
+    "runtime_behavior_observed": "PENDING_CURRENT_HEAD_LOCAL_VERIFIER",
+    "security_authority_bounded": true,
+    "proof_receipt_bound_to_sha": true,
+    "reusable_capabilities_extracted": true,
+    "projections_truth_consistent": true,
+    "evolution_cursor_defined": true
+  },
+  "open_findings": [],
+  "reusable_capabilities": [
+    "acl_aware_evidence_eligibility",
+    "claim_unit_coverage",
+    "evaluator_owned_freshness_time",
+    "bounded_library_evaluation",
+    "caller_policy_floor_enforcement",
+    "path_safe_cli_errors",
+    "evidence_digest_rebinding"
+  ],
+  "evolution_cursor": "Execute repository-native full pytest plus verify_claim on this repaired exact head; resolve addressed review threads; merge with expected-head guard when green; read back canonical main and bind the final receipt without moving source.",
   "donor_plan": {
     "mode": "none",
     "donors": []
   },
-  "frozen_at": "2026-08-10T10:11Z"
+  "updated_at": "2026-08-14T09:22:00-10:00"
 }

@@ -1,4 +1,15 @@
-"""Enterprise Search Claim Fence — independent GlacierEQ scaffold."""
-from .enterprise_search_claim_fence import EnterpriseSearchClaimFence
+"""Entitlement-aware enterprise-search evidence verification."""
 
-__all__ = ["EnterpriseSearchClaimFence"]
+from .enterprise_search_evidence import (
+    Decision,
+    EnterpriseSearchEvidence,
+    EnterpriseSearchEvidenceReceipt,
+    EnterpriseSearchEvidenceRequest,
+)
+
+__all__ = [
+    "Decision",
+    "EnterpriseSearchEvidence",
+    "EnterpriseSearchEvidenceReceipt",
+    "EnterpriseSearchEvidenceRequest",
+]
