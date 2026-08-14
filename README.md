@@ -12,11 +12,13 @@ Enterprise answers can appear supported while depending on documents the request
 
 - binds actor identity and entitlements into the evidence decision;
 - excludes ACL-inaccessible, stale, or below-threshold documents;
-- maps supporting and contradicting hits to explicit claim units;
+- owns freshness time at the evaluator boundary; callers cannot override evaluation time in the payload, while tests may inject a deterministic clock;
+- maps supporting and contradicting metadata to explicit claim units and refuses contradiction even when a hit's coarse stance label says `support`;
 - enforces minimum supporting-hit, source-diversity, and claim-coverage policy;
 - rejects excessive contradiction;
 - binds decisions to immutable document and index-snapshot digests;
 - supports expected-evidence rebinding to detect result or entitlement mutation;
+- enforces the aggregate input-size ceiling at the library boundary as well as the CLI boundary;
 - rejects malformed, over-budget, expired, duplicate, or out-of-range inputs fail-closed;
 - emits deterministic ALLOW/REFUSE receipts with bounded metrics and evidence identity.
 
@@ -48,4 +50,4 @@ Reusable capability: ACL-aware evidence eligibility + claim-unit coverage + cont
 
 ## Excellence cursor
 
-Keep the full deterministic/adversarial suite passing on each source revision, preserve ACL and evidence-rebinding boundaries, and only add provider integration when it can be authenticated and proven separately.
+Keep the full deterministic/adversarial suite passing on each source revision, preserve ACL, evaluator-time, aggregate-size, contradiction-accounting, and evidence-rebinding boundaries, and only add provider integration when it can be authenticated and proven separately.
